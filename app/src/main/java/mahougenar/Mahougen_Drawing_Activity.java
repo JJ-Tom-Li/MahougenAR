@@ -1,11 +1,12 @@
 package mahougenar;
 
 import android.annotation.TargetApi;
-import android.app.Activity;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -20,10 +21,9 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
 
-public class Mahougen_Drawing_Activity extends Activity {
+public class Mahougen_Drawing_Activity extends AppCompatActivity{
 
     private MahougenView mahougenView;
-    private Button btnReset,btnShare,btnSummon;
     private SeekBar sbMP;
     private TextView tvMP;
     @Override
@@ -35,9 +35,6 @@ public class Mahougen_Drawing_Activity extends Activity {
         askPermissions();
         // find the views
         mahougenView = (MahougenView)findViewById(R.id.mahougenView);
-        btnReset = (Button)findViewById(R.id.buttonReset);
-        btnShare = (Button)findViewById(R.id.buttonShare);
-        btnSummon = (Button)findViewById(R.id.buttonSummon);
         sbMP = (SeekBar)findViewById(R.id.seekBarMP);
         tvMP=(TextView)findViewById(R.id.textView);
 
@@ -64,13 +61,7 @@ public class Mahougen_Drawing_Activity extends Activity {
 
             }
         });
-      /*  btnSave=(Button)findViewById(R.id.btn_save);
-        btnSave.setOnClickListener(new Button.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                OnSaveClicked();
-            }
-        });*/
+
     }
 
     @TargetApi(Build.VERSION_CODES.M)
@@ -129,17 +120,38 @@ public class Mahougen_Drawing_Activity extends Activity {
         final File pictureFile = OnSaveClicked();
         // invoke an intent with ACTION_SEND
         final Intent shareIntent = new Intent(Intent.ACTION_SEND);
-        shareIntent.setType("image/jpeg");
+        shareIntent.setType("image/png");
         shareIntent.putExtra(Intent.EXTRA_STREAM, Uri.fromFile(pictureFile));
         startActivity(Intent.createChooser(shareIntent,getString(R.string.share)));
     }
 
     public void OnSummonClick(View v)
     {
-        Intent i = new Intent();
-        i.setClassName("com.vuforia.samples", "com.vuforia.samples.app.UserDefinedTargets.UserDefinedTargets");
-        startActivity(i);
-        System.out.println("jump");
+        AlertDialog showTheTutorial = new AlertDialog.Builder(Mahougen_Drawing_Activity.this)
+                .setTitle("即將生成魔法陣")
+                .setMessage("生成魔法陣時，請依照以下步驟:\n" +
+                        "1.找一張辨識度高的相片或卡片(悠遊卡)，做為目標物\n" +
+                        "2.將相機畫面對準對焦至目標物，盡量填滿整個相機畫面\n" +
+                        "3.按下正下方的相機圖示，魔法陣將會生成\n" +
+                        "4.成為大魔法師吧!\n")
+                .setPositiveButton("生成",new DialogInterface.OnClickListener(){
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        Toast.makeText(Mahougen_Drawing_Activity.this,"即將生成，請稍等...",Toast.LENGTH_LONG).show();
+                        OnSaveClicked();//save mahougen
+                        Intent intent = new Intent();
+                        intent.setClassName(getPackageName(), getPackageName()+".app.UserDefinedTargets.UserDefinedTargets");
+                        startActivity(intent); //go to the AR ui
+                    }
+                })
+                .setNegativeButton("取消",new DialogInterface.OnClickListener(){
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        Toast.makeText(Mahougen_Drawing_Activity.this,"取消",Toast.LENGTH_LONG).show();
+                    }
+                })
+                .show();
+        //System.out.println("jump");
     }
 
     @Override
