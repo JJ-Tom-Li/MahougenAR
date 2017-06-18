@@ -13,7 +13,7 @@ package com.vuforia.samples.VuforiaSamples.app.UserDefinedTargets;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.nio.Buffer;
+import java.io.FilenameFilter;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Vector;
@@ -21,12 +21,14 @@ import java.util.Vector;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.util.DisplayMetrics;
 import android.util.Log;
@@ -36,6 +38,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
+import android.widget.ArrayAdapter;
 import android.widget.RelativeLayout;
 
 import com.vuforia.CameraDevice;
@@ -172,16 +175,16 @@ public class UserDefinedTargets extends Activity implements
     {
         //mTextures.add(Texture.loadTextureFromApk("TextureTeapotBlue.png",
          //   getAssets()));
+        Intent intent = getIntent();
         File sdFile = android.os.Environment.getExternalStorageDirectory();
-        String path = sdFile.getPath() + File.separator + "mahougens/Mahougen.png";
-
+        String path = sdFile.getPath() + File.separator + "mahougens/"+intent.getStringExtra("imageName");
         try{
-        FileInputStream in = new FileInputStream(path);
-        BufferedInputStream buf = new BufferedInputStream(in);
-        byte[] bMapArray= new byte[buf.available()];
-        buf.read(bMapArray);
-        Bitmap bMap = BitmapFactory.decodeByteArray(bMapArray, 0, bMapArray.length);
-        mTextures.add(loadTextureFromBitmap(bMap));
+            FileInputStream in = new FileInputStream(path);
+            BufferedInputStream buf = new BufferedInputStream(in);
+            byte[] bMapArray= new byte[buf.available()];
+            buf.read(bMapArray);
+            Bitmap bMap = BitmapFactory.decodeByteArray(bMapArray, 0, bMapArray.length);
+            mTextures.add(loadTextureFromBitmap(bMap));
         }
         catch (Exception e)
         {
@@ -214,7 +217,6 @@ public class UserDefinedTargets extends Activity implements
 
         return texture;
     }
-
 
     // Called when the activity will start interacting with the user.
     @Override

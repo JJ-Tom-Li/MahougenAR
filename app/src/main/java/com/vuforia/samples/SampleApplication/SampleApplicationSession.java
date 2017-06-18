@@ -12,27 +12,17 @@ package com.vuforia.samples.SampleApplication;
 
 import android.app.Activity;
 import android.content.pm.ActivityInfo;
-import android.content.res.Configuration;
-import android.graphics.Point;
 import android.os.AsyncTask;
 import android.os.Build;
-import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.OrientationEventListener;
 import android.view.WindowManager;
 
-import com.vuforia.CameraCalibration;
 import com.vuforia.CameraDevice;
 import com.vuforia.Device;
 import com.vuforia.INIT_ERRORCODE;
 import com.vuforia.INIT_FLAGS;
-import com.vuforia.Matrix44F;
-import com.vuforia.Renderer;
 import com.vuforia.State;
-import com.vuforia.Tool;
-import com.vuforia.Vec2I;
-import com.vuforia.VideoBackgroundConfig;
-import com.vuforia.VideoMode;
 import com.vuforia.Vuforia;
 import com.vuforia.Vuforia.UpdateCallbackInterface;
 import com.vuforia.samples.VuforiaSamples.R;

@@ -6,26 +6,32 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.SubMenu;
 import android.view.View;
-import android.widget.Button;
+import android.widget.ArrayAdapter;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 import com.vuforia.samples.VuforiaSamples.R;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.FilenameFilter;
 import java.io.OutputStream;
+import java.util.ArrayList;
 
 public class Mahougen_Drawing_Activity extends AppCompatActivity{
 
     private MahougenView mahougenView;
     private SeekBar sbMP;
     private TextView tvMP;
+    private ArrayList<String> images = new ArrayList<String>();
+    private String imageName;
+    ArrayAdapter<String> imageAdapter;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -62,6 +68,8 @@ public class Mahougen_Drawing_Activity extends AppCompatActivity{
             }
         });
 
+        //update image list
+        updateImageList();
     }
 
     @TargetApi(Build.VERSION_CODES.M)
@@ -91,8 +99,8 @@ public class Mahougen_Drawing_Activity extends AppCompatActivity{
             if(!dirFile.exists())//如果資料夾不存在
                 dirFile.mkdir();//建立資料夾
 
-            File file = new File(path,
-                    "Mahougen.png");
+            imageName= System.currentTimeMillis()+".png";
+            File file = new File(path, imageName);
             OutputStream stream = new FileOutputStream(file);
             mahougenView.saveBitmap(stream);
             stream.close();
@@ -125,7 +133,37 @@ public class Mahougen_Drawing_Activity extends AppCompatActivity{
         startActivity(Intent.createChooser(shareIntent,getString(R.string.share)));
     }
 
-    public void OnSummonClick(View v)
+    public void OnSummonClick(View v) {
+        final String[] chioce = new String[]{"用這張!", "從資料夾選取"};
+        AlertDialog showChoice = new AlertDialog.Builder(Mahougen_Drawing_Activity.this)
+                .setTitle("選擇魔法陣來源")
+                .setItems(chioce, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        if (chioce[i] == "用這張!") {
+                            OnSaveClicked();//save mahougen
+                            showTutorial();
+                        } else if (chioce[i] == "從資料夾選取") {
+                            AlertDialog imageChioce = new AlertDialog.Builder(Mahougen_Drawing_Activity.this)
+                                    .setAdapter(imageAdapter, new DialogInterface.OnClickListener() {
+                                        @Override
+                                        public void onClick(DialogInterface dialogInterface, int i) {
+                                            imageName = imageAdapter.getItem(i).toString();
+                                            System.out.println(imageName);
+                                            showTutorial();
+                                        }
+                                    })
+                                    .show();
+                        }
+
+                    }
+                })
+                .show();
+
+        //System.out.println("jump");
+    }
+
+    public void showTutorial()
     {
         AlertDialog showTheTutorial = new AlertDialog.Builder(Mahougen_Drawing_Activity.this)
                 .setTitle("即將生成魔法陣")
@@ -134,26 +172,24 @@ public class Mahougen_Drawing_Activity extends AppCompatActivity{
                         "2.將相機畫面對準對焦至目標物，盡量填滿整個相機畫面\n" +
                         "3.按下正下方的相機圖示，魔法陣將會生成\n" +
                         "4.成為大魔法師吧!\n")
-                .setPositiveButton("生成",new DialogInterface.OnClickListener(){
+                .setPositiveButton("生成", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
-                        Toast.makeText(Mahougen_Drawing_Activity.this,"即將生成，請稍等...",Toast.LENGTH_LONG).show();
-                        OnSaveClicked();//save mahougen
+                        Toast.makeText(Mahougen_Drawing_Activity.this, "即將生成，請稍等...", Toast.LENGTH_LONG).show();
                         Intent intent = new Intent();
-                        intent.setClassName(getPackageName(), getPackageName()+".app.UserDefinedTargets.UserDefinedTargets");
+                        intent.setClassName(getPackageName(), getPackageName() + ".app.UserDefinedTargets.UserDefinedTargets");
+                        intent.putExtra("imageName",imageName);
                         startActivity(intent); //go to the AR ui
                     }
                 })
-                .setNegativeButton("取消",new DialogInterface.OnClickListener(){
+                .setNegativeButton("取消", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
-                        Toast.makeText(Mahougen_Drawing_Activity.this,"取消",Toast.LENGTH_LONG).show();
+                        Toast.makeText(Mahougen_Drawing_Activity.this, "取消", Toast.LENGTH_LONG).show();
                     }
                 })
                 .show();
-        //System.out.println("jump");
     }
-
     @Override
     public boolean onCreateOptionsMenu(Menu menu)
     {
@@ -213,6 +249,32 @@ public class Mahougen_Drawing_Activity extends AppCompatActivity{
             if(item.getItemId()!= Menu.FIRST&&item.getItemId()!= Menu.FIRST+6)
                 Toast.makeText(this,"顏色已修改", Toast.LENGTH_LONG).show();
         return super.onOptionsItemSelected(item);
+    }
+
+
+    public void updateImageList() {
+        /** load the song list form sdcard*/
+        File home = new File(Environment.getExternalStorageDirectory().getPath()+"/mahougens/");
+        /*check if there is file*/
+        if (home.listFiles( new FileExtensionFilter()).length > 0) {
+            for (File file : home.listFiles( new FileExtensionFilter())) {
+                /*add png file to image list*/
+                System.out.println(file.getName());
+                images.add(file.getName());
+            }
+
+            /*put the image list into ListView*/
+            imageAdapter = new ArrayAdapter<String>
+                    (this,R.layout.support_simple_spinner_dropdown_item,images);
+
+        }
+    }
+
+    public class FileExtensionFilter implements FilenameFilter {
+        /** check if file is end with ".png" or ".PNG"*/
+        public boolean accept(File dir, String name) {
+            return (name.endsWith(".png") || name.endsWith(".PNG")||name.endsWith(".jpg")||name.endsWith(".JPG"));
+        }
     }
 }
 
