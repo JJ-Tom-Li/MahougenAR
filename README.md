@@ -16,3 +16,7 @@
   If you have any question,please conntact me by email:
   
   tom86311@gmail.com
+  
+# Other
+  如果build有問題，請在gradle內加上:
+   compile files("$VUFORIA_SDK_DIR/$JAR_DIR/Vuforia.jar")
