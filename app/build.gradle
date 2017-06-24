@@ -12,7 +12,7 @@ android {
         jniLibs.srcDir "$VUFORIA_SDK_DIR/$NATIVE_LIB_DIR/"
     }
     defaultConfig {
-        applicationId 'com.vuforia.MahougenAR.MahougenAR'
+        applicationId 'com.vuforia.MahougenAR.VuforiaSamples'
         minSdkVersion 9
         targetSdkVersion 22
         versionCode 600
