@@ -2,6 +2,7 @@ package mahougenar;
 
 /**
  * Created by pandatom on 2017/6/4.
+ * This code is modified from https://github.com/pistatium/mahougen
  */
 
 public class Vector{

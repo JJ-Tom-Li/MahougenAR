@@ -1,5 +1,18 @@
 package mahougenar;
-
+/**
+ * 系級:資工二
+ * 學號:4104056004
+ * 姓名:李家駿
+ * project name:魔法陣產生器AR
+ * project idea:
+ *      Base on the "https://github.com/pistatium/mahougen" code, I want to add AR function to this app.
+ *      This app can make users easily draw a mahougen(Magic Circle) and display it in reality by AR function.
+ *      Also ,users can change the line and background color easily.
+ *      If you want to share your works to friends,this app provides a simple way for sharing by one button.
+ *
+ *
+ *      Enjoy being a GREAT MAGICIAN!
+ * */
 import android.annotation.TargetApi;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -17,7 +30,7 @@ import android.widget.ArrayAdapter;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
-import com.vuforia.samples.VuforiaSamples.R;
+import com.vuforia.MahougenAR.VuforiaSamples.R;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FilenameFilter;
@@ -26,10 +39,11 @@ import java.util.ArrayList;
 
 public class Mahougen_Drawing_Activity extends AppCompatActivity{
 
-    private MahougenView mahougenView;
-    private SeekBar sbMP;
-    private TextView tvMP;
-    private ArrayList<String> images = new ArrayList<String>();
+    /**Variables declaration*/
+    private MahougenView mahougenView; //The Mahougen view
+    private SeekBar sbMP;              //The MP seekBar
+    private TextView tvMP;             //The TextView of MP
+    private ArrayList<String> images = new ArrayList<String>(); //The namelist of images from sdcard
     private String imageName;
     ArrayAdapter<String> imageAdapter;
     @Override
@@ -48,11 +62,13 @@ public class Mahougen_Drawing_Activity extends AppCompatActivity{
         tvMP.setText("MP:10");
         //set the seekBar
         sbMP.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-            int progess=0;
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                //Set the MP.
+                //The MP is the vertexCount in MahougenView.
                 tvMP.setText("MP:"+(progress+3));
                 mahougenView.changeMP(progress+3);
+                //re-initialize the mahougenView
                 mahougenView.clear();
                 mahougenView=(MahougenView)findViewById(R.id.mahougenView);
             }
@@ -68,6 +84,8 @@ public class Mahougen_Drawing_Activity extends AppCompatActivity{
             }
         });
 
+        //Create the Mahougen dir
+        CreateMahougenDir();
         //update image list
         updateImageList();
     }
@@ -83,38 +101,48 @@ public class Mahougen_Drawing_Activity extends AppCompatActivity{
         requestPermissions(permissions, requestCode);
     }
 
+    public void CreateMahougenDir()
+    {
+        File sdFile = android.os.Environment.getExternalStorageDirectory(); //The dir of sdcard
+        String path = sdFile.getPath() + File.separator + "mahougens"; //The path of mahougen dir
+        File dirFile = new File(path);
+        if(!dirFile.exists())//如果資料夾不存在
+            dirFile.mkdir();//建立資料夾
+    }
     public void OnResetClick(View v)
     {
+        /**reset the mahougenView*/
+        //clear
         mahougenView.clear();
+        //show the clear Toast
         Toast.makeText(this,"Clear", Toast.LENGTH_LONG)
                 .show();
     }
-    public File OnSaveClicked()
-    {
-        try{
-            /*create the dir if no exists*/
-            File sdFile = android.os.Environment.getExternalStorageDirectory();
-            String path = sdFile.getPath() + File.separator + "mahougens";
-            File dirFile = new File(path);
-            if(!dirFile.exists())//如果資料夾不存在
-                dirFile.mkdir();//建立資料夾
 
-            imageName= System.currentTimeMillis()+".png";
+    public File Save()
+    {
+        /**Save the mahougen image into the sdcard.
+         * If there is no the directory of "Mahougens",create one.
+         * This app will get the mahougen images from the directory,so
+         * you can put your own images(e.g. .png or .jpg ) into the directory and create a 2D AR.
+         * (This should be a bug,but I want to keep it as a hidden function XD.)
+         * */
+        try{
+            File sdFile = android.os.Environment.getExternalStorageDirectory(); //The dir of sdcard
+            String path = sdFile.getPath() + File.separator + "mahougens"; //The path of mahougen dir
+
+            imageName= System.currentTimeMillis()+".png"; //Use the time as the file name.
             File file = new File(path, imageName);
             OutputStream stream = new FileOutputStream(file);
-            mahougenView.saveBitmap(stream);
+            mahougenView.saveBitmap(stream); //Put the bitmap into file stream.
             stream.close();
-            //send broadcast to Media to update data
-            /*Intent intent = new Intent();
-            intent.setAction(Intent.ACTION_MEDIA_MOUNTED);
-            intent.setData(Uri.fromFile(Environment
-                    .getExternalStorageDirectory()));
-            sendBroadcast(intent);*/
 
+            //Show Toast
             Toast.makeText(this,"save success", Toast.LENGTH_LONG)
             .show();
             return file;
         }catch(Exception e){
+            //Show error
             Toast.makeText(this,"save failed", Toast.LENGTH_LONG)
             .show();
             e.printStackTrace();
@@ -124,32 +152,41 @@ public class Mahougen_Drawing_Activity extends AppCompatActivity{
 
     public void OnShareClick(View v)
     {
+        /**Share the mahougen through other SNS.*/
         // get file directory.
-        final File pictureFile = OnSaveClicked();
+        final File pictureFile = Save();
         // invoke an intent with ACTION_SEND
         final Intent shareIntent = new Intent(Intent.ACTION_SEND);
+        //Set the image type as png
         shareIntent.setType("image/png");
         shareIntent.putExtra(Intent.EXTRA_STREAM, Uri.fromFile(pictureFile));
         startActivity(Intent.createChooser(shareIntent,getString(R.string.share)));
     }
 
     public void OnSummonClick(View v) {
-        final String[] chioce = new String[]{"用這張!", "從資料夾選取"};
+        /**First showing the AlertDialog and let user to choose
+         *  either use the mahougen or select others from sdcard.
+         *  Both choice will show the tutorial of the generating of AR mahougen.*/
+
+        final String[] chioce = new String[]{"用這張!", "從資料夾選取"}; //"Choose this" or "Select from directory"
+
         AlertDialog showChoice = new AlertDialog.Builder(Mahougen_Drawing_Activity.this)
                 .setTitle("選擇魔法陣來源")
                 .setItems(chioce, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
                         if (chioce[i] == "用這張!") {
-                            OnSaveClicked();//save mahougen
+                            //Use the mahougen you draw
+                            Save();//save mahougen
                             showTutorial();
                         } else if (chioce[i] == "從資料夾選取") {
+                            //Use the mahougen(or other images) from the dir
                             AlertDialog imageChioce = new AlertDialog.Builder(Mahougen_Drawing_Activity.this)
                                     .setAdapter(imageAdapter, new DialogInterface.OnClickListener() {
                                         @Override
                                         public void onClick(DialogInterface dialogInterface, int i) {
+                                            //get the image name from the list
                                             imageName = imageAdapter.getItem(i).toString();
-                                            System.out.println(imageName);
                                             showTutorial();
                                         }
                                     })
@@ -159,12 +196,11 @@ public class Mahougen_Drawing_Activity extends AppCompatActivity{
                     }
                 })
                 .show();
-
-        //System.out.println("jump");
     }
 
     public void showTutorial()
     {
+        /**Showing the tutorial of the generating.*/
         AlertDialog showTheTutorial = new AlertDialog.Builder(Mahougen_Drawing_Activity.this)
                 .setTitle("即將生成魔法陣")
                 .setMessage("生成魔法陣時，請依照以下步驟:\n" +
@@ -175,16 +211,20 @@ public class Mahougen_Drawing_Activity extends AppCompatActivity{
                 .setPositiveButton("生成", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
+                        //Choose the generate
                         Toast.makeText(Mahougen_Drawing_Activity.this, "即將生成，請稍等...", Toast.LENGTH_LONG).show();
+                        //Create the intent and sent the image name to the UserDefinedTargets activity.
                         Intent intent = new Intent();
                         intent.setClassName(getPackageName(), getPackageName() + ".app.UserDefinedTargets.UserDefinedTargets");
                         intent.putExtra("imageName",imageName);
-                        startActivity(intent); //go to the AR ui
+                        //go to the AR ui
+                        startActivity(intent);
                     }
                 })
                 .setNegativeButton("取消", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
+                        //Choose to cancel
                         Toast.makeText(Mahougen_Drawing_Activity.this, "取消", Toast.LENGTH_LONG).show();
                     }
                 })
@@ -194,6 +234,7 @@ public class Mahougen_Drawing_Activity extends AppCompatActivity{
     public boolean onCreateOptionsMenu(Menu menu)
     {
         /** select to change background color or line color*/
+        //The manu of background color
         SubMenu subMenuBackground = menu.addSubMenu(Menu.NONE, Menu.FIRST, Menu.NONE, "改變背景顏色");
         subMenuBackground.add(Menu.NONE, Menu.FIRST+1, Menu.NONE,"黑色");
         subMenuBackground.add(Menu.NONE, Menu.FIRST+2, Menu.NONE,"白色");
@@ -201,6 +242,7 @@ public class Mahougen_Drawing_Activity extends AppCompatActivity{
         subMenuBackground.add(Menu.NONE, Menu.FIRST+4, Menu.NONE,"藍色");
         subMenuBackground.add(Menu.NONE, Menu.FIRST+5, Menu.NONE,"紅色");
 
+        //The manu of line color
         SubMenu subMenuLine = menu.addSubMenu(Menu.NONE+1, Menu.FIRST+6, Menu.NONE, "改變線條顏色");
         subMenuLine.add(Menu.NONE+1, Menu.FIRST+7, Menu.NONE,"黑色");
         subMenuLine.add(Menu.NONE+1, Menu.FIRST+8, Menu.NONE,"白色");
@@ -214,6 +256,7 @@ public class Mahougen_Drawing_Activity extends AppCompatActivity{
     @Override
     public boolean onOptionsItemSelected(MenuItem item)
     {
+        /**If user choose the color in the menu ,change it.*/
             switch(item.getItemId()){
                 case Menu.FIRST+1:
                     mahougenView.changeBackgroundColor("BLACK");
@@ -247,6 +290,7 @@ public class Mahougen_Drawing_Activity extends AppCompatActivity{
                     break;
             }
             if(item.getItemId()!= Menu.FIRST&&item.getItemId()!= Menu.FIRST+6)
+                //If the chosen item is not the "Change background" or "Change line"
                 Toast.makeText(this,"顏色已修改", Toast.LENGTH_LONG).show();
         return super.onOptionsItemSelected(item);
     }
@@ -255,11 +299,10 @@ public class Mahougen_Drawing_Activity extends AppCompatActivity{
     public void updateImageList() {
         /** load the song list form sdcard*/
         File home = new File(Environment.getExternalStorageDirectory().getPath()+"/mahougens/");
-        /*check if there is file*/
+        /*check if there is any file*/
         if (home.listFiles( new FileExtensionFilter()).length > 0) {
             for (File file : home.listFiles( new FileExtensionFilter())) {
-                /*add png file to image list*/
-                System.out.println(file.getName());
+                //add png file to image list
                 images.add(file.getName());
             }
 

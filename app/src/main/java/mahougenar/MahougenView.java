@@ -16,33 +16,30 @@ import java.util.ArrayList;
 
 /**
  * Created by pandatom on 2017/5/28.
+ * This code is modified from https://github.com/pistatium/mahougen
+ *
+
  */
 
 public class MahougenView extends View {
+    /**Variables declaration*/
     private Paint mPaint = null;
     private Bitmap mBitmap = null;
     private Vector center=new Vector(0.0,0.0);
-    private int vertexCount=10;
-
+    private int vertexCount=10; //=MP
     ArrayList<Path> pathArray;
+
     public MahougenView(Context context , AttributeSet attrs)
     {
         super(context,attrs);
         this.setBackgroundColor(Color.BLACK);
-      //  mBitmap = Bitmap.createBitmap(800,800,Bitmap.Config.ARGB_8888);
-      //  mBitmapCanvas = new Canvas(mBitmap);
-       // mBitmapCanvas.drawColor(Color.BLACK);
         mPaint = new Paint();
         mPaint.setStyle(Paint.Style.STROKE);
         mPaint.setColor(Color.WHITE);
         mPaint.setStrokeWidth(10);
-      //  mPaint.setDither(true);
-       // mPaint.setStrokeJoin(Paint.Join.ROUND);
-       // mPaint.setStrokeCap(Paint.Cap.ROUND);
-      //  setWillNotDraw(false);
         mPaint.setAntiAlias(true);
         pathArray=new ArrayList<Path>();
-        for(int i=0;i<vertexCount;i++)
+        for(int i=0;i<vertexCount;i++) //initialize the path array by the number of vertexCount
         {
             pathArray.add(new Path());
         }
@@ -51,26 +48,23 @@ public class MahougenView extends View {
 
     public void onWindowFocusChanged(boolean hasWindowFocus){
         super.onWindowFocusChanged(hasWindowFocus);
-       // if(hasFocus()) {
+        /**set the center */
         this.center = new Vector((this.getRight() - this.getLeft())/2,(this.getBottom()-this.getTop())/2);
-           // System.out.println("hasFocus");
-      //  }
-        /*System.out.println("width="+getRootView().getWidth());
-        System.out.println("height="+getRootView().getHeight());*/
-      //  System.out.println("center.x="+center.x);
-      //  System.out.println("center.y="+center.y);
+
+
     }
 
     public boolean onTouchEvent(MotionEvent event)
     {
+        /**Calculate the path while touching*/
         Vector current = new Vector(event.getX(),event.getY());
-        System.out.println("current.x="+current.x+"current.y="+current.y);
-        System.out.println("center.x="+center.x+"center.y="+center.y);
+        //System.out.println("current.x="+current.x+"current.y="+current.y);
+        //System.out.println("center.x="+center.x+"center.y="+center.y);
         Vector direction = current.minus(center);
         double r = direction.size();
-        System.out.println("r="+r);
         double alpha =(2.0* Math.PI/this.vertexCount);
         double theta = direction.angle();
+
         for(int i=0;i<this.vertexCount;i++)
         {
             if(i*alpha>theta){
@@ -78,12 +72,10 @@ public class MahougenView extends View {
                 break;
             }
         }
+
         switch (event.getAction())
         {
             case MotionEvent.ACTION_DOWN:
-                //System.out.println("ACTION_DOWN");
-               // System.out.println("pathArraysize"+pathArray.size());
-
                 int i=0;
                 for(Path p : pathArray) {
                     Vector target = this.center.plus(Vector.ofAngle(theta + i * alpha).times(r));
@@ -96,7 +88,6 @@ public class MahougenView extends View {
             case MotionEvent.ACTION_MOVE:
             case MotionEvent.ACTION_UP:
 
-                //System.out.println("x="+current.x+",y="+current.y);
                 i=0;
                 for(Path p : pathArray) {
                     Vector target = this.center.plus(Vector.ofAngle(theta + i * alpha).times(r));
@@ -115,8 +106,11 @@ public class MahougenView extends View {
 
     public void changeMP(int MP)
     {
+        /**Changing the MP means change the number of lines.*/
         vertexCount=MP;
+        // clean the canvas
         clear();
+        // initialize the path array again
         pathArray=new ArrayList<Path>();
         for(int i=0;i<vertexCount;i++)
         {
@@ -126,6 +120,7 @@ public class MahougenView extends View {
 
     public void onDraw(Canvas canvas)
     {
+        // draw the paths
         super.onDraw(canvas);
           for(Path p:pathArray) {
               canvas.drawPath(p, mPaint);
@@ -134,12 +129,16 @@ public class MahougenView extends View {
 
     public void saveBitmap(OutputStream stream)
     {
+        /**Trying to save the mahougen in the file stream*/
         try {
+            // get the mahougen
             mBitmap=getBitmapFromView(this);
+            // put bitmap into file stream
             mBitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
         }
         catch(Exception e)
         {
+            // output the error
             System.out.println("compress error");
             e.printStackTrace();
         }
@@ -147,6 +146,7 @@ public class MahougenView extends View {
 
     public void clear()
     {
+        /**clean the paths*/
         for(Path p:this.pathArray)
         {
             p.reset();
@@ -157,11 +157,15 @@ public class MahougenView extends View {
 
     public void changeBackgroundColor(String color)
     {
+        /**Changes the background color*/
         try {
+            //First turn the string into id.
+            //And than set the background color.
             this.setBackgroundColor(Color.class.getField(color).getInt(null));
         }
         catch(Exception e)
         {
+            //output the error
             System.out.println("change background color error.");
             e.printStackTrace();
         }
@@ -169,7 +173,10 @@ public class MahougenView extends View {
 
     public void changeLineColor(String color)
     {
+        /**Changes the line color*/
         try {
+            //First turn the string into id.
+            //And than set the line color.
             mPaint.setColor(Color.class.getField(color).getInt(null));
         }
         catch(Exception e)
@@ -180,6 +187,10 @@ public class MahougenView extends View {
     }
 
     public static Bitmap getBitmapFromView(View view) {
+        /**Turn the view into bitmap.
+         * This code is copy from the below website:
+         * https://stackoverflow.com/questions/2801116/converting-a-view-to-bitmap-without-displaying-it-in-android
+         */
         //Define a bitmap with the same size as the view
         Bitmap returnedBitmap = Bitmap.createBitmap(view.getWidth(), view.getHeight(), Bitmap.Config.ARGB_8888);
         //Bind a canvas to it
