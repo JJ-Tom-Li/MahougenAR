@@ -12,6 +12,7 @@ package mahougenar;
  *
  *
  *      Enjoy being a GREAT MAGICIAN!
+ *      Finish in 2017/6/25
  * */
 import android.annotation.TargetApi;
 import android.content.DialogInterface;
