@@ -54,6 +54,12 @@ public class Mahougen_Drawing_Activity extends AppCompatActivity{
 
         // ask permission to read and write sdcard
         askPermissions();
+
+        //Create the Mahougen dir
+        CreateMahougenDir();
+        //update image list
+        updateImageList();
+
         // find the views
         mahougenView = (MahougenView)findViewById(R.id.mahougenView);
         sbMP = (SeekBar)findViewById(R.id.seekBarMP);
@@ -85,10 +91,7 @@ public class Mahougen_Drawing_Activity extends AppCompatActivity{
             }
         });
 
-        //Create the Mahougen dir
-        CreateMahougenDir();
-        //update image list
-        updateImageList();
+
     }
 
     @TargetApi(Build.VERSION_CODES.M)

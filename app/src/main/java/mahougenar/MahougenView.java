@@ -94,7 +94,7 @@ public class MahougenView extends View {
                     if(vertexCount%2==0&&i%2==0)
                         target = this.center.plus(Vector.ofAngle(-theta+(i+1)*alpha).times(r));
                     p.lineTo((float)target.x,(float)target.y);
-                    System.out.println("x="+target.x+",y="+target.y);
+                  //  System.out.println("x="+target.x+",y="+target.y);
                     i++;
                 }
                 break;
