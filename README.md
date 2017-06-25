@@ -14,7 +14,7 @@
   
   ONLY FOR EDUCATIONAL AND RESEARCH USE.WILL NOT BE USED FOR COMMERCIAL.
   
-  If you have any question,please conntact me by email:
+  If you have any question,please contact me by email:
   
   tom86311@gmail.com
   
