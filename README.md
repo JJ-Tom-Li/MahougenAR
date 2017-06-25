@@ -12,7 +12,7 @@
   
   This code is modified from https://github.com/pistatium/mahougen
   
-  ONLY FOR EDUCATIONAL AND RESEARCH USE.WILL NOT BE USED FOR COMMERCIAL.
+  ONLY FOR EDUCATIONAL AND RESEARCH USE.WILL NOT BE USED IN COMMERCIAL.
   
   If you have any question,please contact me by email:
   
