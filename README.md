@@ -1,5 +1,5 @@
 # MahougenAR
-  可讓使用者簡單畫出魔法陣，再利用AR功能顯示在平面上。
+  可讓使用者簡單畫出魔法陣，再利用AR功能顯示在平面上。demo:https://youtu.be/fwx6muTiX64
 # 如何編譯專案?
   將此專案下載至您的電腦，解壓縮後將專案資料夾放在Vuforia sdk的sample資料夾中，再用android studio 開啟。
 
